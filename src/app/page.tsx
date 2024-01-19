@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import styles from './page.module.css'
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 type Todo = {
   _id: string
@@ -15,6 +15,15 @@ export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [newTodoText, setNewTodoText] = useState<string>("")
   const [editTodo, setEditTodo] = useState<Todo | null>(null)
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/todo")
+    .then(res => res.json())
+    .then(data => {
+      setTodos(data)
+      setLoading(false)
+    })
+  }, [])
 
   const addTodo = async() => {
     if(!newTodoText) return;
@@ -70,6 +79,42 @@ export default function Home() {
           }   
 
         </div>
+
+        <ul className="sm:w-9/12 lg:w-5/12 w-full px-4 flex flex-col justify-center items-centermy-6 py-6">
+          {isLoading && (
+            <p className="text-pink-600 text-2xl italic my-10">Loading...</p>
+          )}
+          {!isLoading && todos && todos.length == 0 ? (
+            <div className="text-pink-600 text-2xl italic my-10">
+              (No todos present in the list)
+            </div>
+          ) : (
+            <>
+              {!isLoading && todos && todos.map((todo: Todo) => (
+                <li 
+                  key={todo._id}
+                  className="bg-slate-900 px-6 py-5 rounded-lg my-3 hover:text-green-400 text-lg w-full"
+                >
+                  <div className="flex justify-start items-start w-8/12">
+                    <input
+                      type="checkbox"
+                      className="w-5 h-5 cursor-pointermt-1"
+                    />
+                    <span 
+                      className={`${
+                        todo.completed ? "line-through" : "list-none"
+                      } px-4 w-full text-yellow-500`}>
+                      {todo.text}
+                    </span>
+                  </div>
+
+                </li>
+              ))}
+            </>
+          )
+
+          }
+        </ul>
 
       </div>
       
