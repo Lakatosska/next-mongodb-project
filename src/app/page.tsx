@@ -12,9 +12,27 @@ type Todo = {
 
 export default function Home() {
   const [isLoading, setLoading] = useState(true)
-  const [todos, setTodos] = useState<Todo | null>(null)
+  const [todos, setTodos] = useState<Todo[]>([])
   const [newTodoText, setNewTodoText] = useState<string>("")
   const [editTodo, setEditTodo] = useState<Todo | null>(null)
+
+  const addTodo = async() => {
+    if(!newTodoText) return;
+
+    const response = await fetch('http://localhost:3000/api/todo', {
+      method: 'POST',
+      body: JSON.stringify({ text: newTodoText }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const data = await response.json()
+
+    console.log("data", data)
+    setTodos([...todos, data])
+    setNewTodoText('')
+  }
 
   return (
     <main className="font-mulish grid lg:place-items-start place-items-center w-full bg-black text-purple-500 min-h-screen">
@@ -41,8 +59,10 @@ export default function Home() {
                   className="w-full lg:w-8/12 bg-black border border-purple-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
                   type="text"
                   placeholder="Write here..."
+                  value={newTodoText}
+                  onChange={(e) => setNewTodoText(e.target.value)}
                 />
-                <button className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold">
+                <button onClick={addTodo} className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold">
                   Add Todo
                 </button>
               </>

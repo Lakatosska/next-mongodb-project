@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export default async function DELETE(req: NextRequest) {
+export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   const client = await clientPromise
   const collection = client.db().collection('todos')
