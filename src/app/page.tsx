@@ -72,6 +72,20 @@ export default function Home() {
     }
   }
 
+  const handleDelete = async(id: string) => {
+    const response = await fetch('http://localhost:3000/api/todo', {
+      method: 'DELETE',
+      body: JSON.stringify({ id }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (response.status === 200) {
+      setTodos(todos.filter((todo: Todo) => todo._id !== id))
+    }
+  }
+
   return (
     <main className="font-mulish grid lg:place-items-start place-items-center w-full bg-black text-purple-500 min-h-screen">
       <div className="flex lg:flex-row flex-col gap-5 lg:justify-start justify-center lg:items-start items-center w-full">
@@ -102,7 +116,10 @@ export default function Home() {
                   value={newTodoText}
                   onChange={(e) => setNewTodoText(e.target.value)}
                 />
-                <button onClick={addTodo} className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold">
+                <button 
+                  onClick={addTodo} 
+                  className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold"
+                >
                   Add Todo
                 </button>
               </>
@@ -139,8 +156,18 @@ export default function Home() {
                   </div>
                   
                   <div className="w-4/12 md:w-3/12">
-                    <button onClick={() => handleEdit(todo)} className="text-sky-400 uppercase md:text-base text-sm px-3 hover:text-sky-600">Edit</button>
-                    <button className="text-pink-400 uppercase md:text-base text-sm px-3 hover:text-pink-600">Del</button>
+                    <button 
+                      onClick={() => handleEdit(todo)} 
+                      className="text-sky-400 uppercase md:text-base text-sm px-3 hover:text-sky-600"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(todo._id)} 
+                      className="text-pink-400 uppercase md:text-base text-sm px-3 hover:text-pink-600"
+                    >
+                      Del
+                    </button>
                   </div>
                 </li>
               ))}
