@@ -72,7 +72,7 @@ export default function Home() {
     }
   }
 
-  const handleDelete = async(id: string) => {
+  const handleDelete = async (id: string) => {
     const response = await fetch('http://localhost:3000/api/todo', {
       method: 'DELETE',
       body: JSON.stringify({ id }),
@@ -85,6 +85,25 @@ export default function Home() {
       setTodos(todos.filter((todo: Todo) => todo._id !== id))
     }
   }
+
+  const toggleTodo = async (id: string, completed: boolean) => {
+    const response = await fetch('http://localhost:3000/api/todo', {
+      method: 'PUT',
+      body: JSON.stringify({ id, completed: !completed }),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    if (response.status === 200) {
+      setTodos(
+        todos.map((todo: Todo) =>
+          todo._id === id ? { ...todo, completed: !completed } : todo
+        )
+      )
+    }
+  }
+
 
   return (
     <main className="font-mulish grid lg:place-items-start place-items-center w-full bg-black text-purple-500 min-h-screen">
@@ -146,6 +165,8 @@ export default function Home() {
                     <input
                       type="checkbox"
                       className="w-5 h-5 cursor-pointer mt-1"
+                      checked={todo.completed}
+                      onChange={() => toggleTodo(todo._id, todo.completed)}
                     />
                     <span 
                       className={`${
@@ -172,13 +193,9 @@ export default function Home() {
                 </li>
               ))}
             </>
-          )
-
-          }
+          )}
         </ul>
-
       </div>
-      
     </main>
   )
 }

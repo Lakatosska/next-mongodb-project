@@ -5,16 +5,11 @@ let clientPromise: Promise<MongoClient>
 
 const uri = process.env.MONGODB_URI
 
-const options: any = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}
-
 if(!process.env.MONGODB_URI) {
   throw new Error('Please add your MongoDB Atlas connection string to .env')
 }
 
-client = new MongoClient(uri!, options)
+client = new MongoClient(uri!)
 clientPromise = client.connect()
 
 clientPromise.then(() => console.log('Connected to MongoDB Atlas'))
