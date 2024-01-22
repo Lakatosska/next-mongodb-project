@@ -20,10 +20,10 @@ export async function POST(req: NextRequest) {
   const client = await clientPromise
   const collection = client.db().collection('todos')
 
-  const { text } = await req.json()
+  const { title, text } = await req.json()
 
   try {
-    const todo = { text: text, completed: false }
+    const todo = { title: title, text: text, completed: false }
     await collection.insertOne(todo)
     return NextResponse.json(todo, { status: 201 })
 
@@ -33,14 +33,14 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const { id, text, completed } = await req.json()
+  const { id, title, text, completed } = await req.json()
   const client = await clientPromise
   const collection = client.db().collection('todos')
 
   try {
     await collection.updateOne(
       { _id: new ObjectId(id) },
-      { $set: { text, completed } }
+      { $set: { title, text, completed } }
     )
     return NextResponse.json({ message: "Todo updated successfully"}, { status: 200 })
   } catch (error) {

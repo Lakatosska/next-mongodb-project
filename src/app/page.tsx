@@ -2,10 +2,11 @@
 
 import Image from 'next/image'
 import styles from './page.module.css'
-import { useState, useEffect } from "react"
+import { useState, useEffect, SetStateAction } from "react"
 
 type Todo = {
   _id: string
+  title: string | null
   text: string | null
   completed: boolean
 }
@@ -15,6 +16,11 @@ export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [newTodoText, setNewTodoText] = useState<string>("")
   const [editTodo, setEditTodo] = useState<Todo | null>(null)
+  const [title, setTitle] = useState<string>("")
+  const [text, setText] = useState<string>("")
+
+  const onTitleChanged = (e : any) => setTitle(e.target.value)
+  const onTextChanged = (e : any) => setText(e.target.value)
 
   useEffect(() => {
     fetch("http://localhost:3000/api/todo")
@@ -25,35 +31,46 @@ export default function Home() {
     })
   }, [])
 
-  const addTodo = async() => {
-    if(!newTodoText) return;
+  const handleSubmitAddTodo = async(event : any) => {
+    event.preventDefault();
+
+    const title = event.target.title.value;
+    const text = event.target.text.value;
+
+    if(!text && !title) return;
+
+    console.log('submit', title, text)
 
     const response = await fetch('http://localhost:3000/api/todo', {
       method: 'POST',
-      body: JSON.stringify({ text: newTodoText }),
+      body: JSON.stringify({ title, text }),
       headers: {
         'Content-Type': 'application/json'
       }
     })
 
     const data = await response.json()
-
     console.log("data", data)
+
     setTodos([...todos, data])
-    setNewTodoText('')
+    setTitle('')
+    setText('')
   }
 
   const handleEdit = (todo: Todo) => {
     setEditTodo(todo)
   }
 
-  const handleSave = async () => {
+  const handleSubmitEditTodo  = async (event : any) => {
+    event.preventDefault();
+
     if (!editTodo) return
 
     const response = await fetch('http://localhost:3000/api/todo', {
       method: 'PUT',
       body: JSON.stringify({ 
         id: editTodo._id,
+        title: editTodo.title,
         text: editTodo.text,
         completed: editTodo.completed
       }),
@@ -65,7 +82,11 @@ export default function Home() {
     if (response.status === 200) {
       setTodos(
         todos.map((todo: Todo) =>
-          todo._id === editTodo._id ? { ...todo, text: editTodo.text } : todo
+          todo._id === editTodo._id ? { 
+            ...todo, 
+            title: editTodo.title, 
+            text: editTodo.text 
+          } : todo
         )
       )
       setEditTodo(null)
@@ -115,32 +136,54 @@ export default function Home() {
           {/* edit todo */}
           {editTodo ? (
             <>
-              <input 
-                className="w-full lg:w-8/12 bg-black border border-yellow-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
-                type="text"
-                value={editTodo.text!}
-                onChange={(e) => setEditTodo({...editTodo, text: e.target.value})}
-              />
-              <button onClick={handleSave} className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold">
-                Save
-              </button>
+              <form onSubmit = {handleSubmitEditTodo}>
+                <input
+                  className="w-full lg:w-8/12 bg-black border border-yellow-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
+                  type="text"
+                  name="title"
+                  value={editTodo.title!}
+                  onChange={(e) => setEditTodo({...editTodo, title: e.target.value})}
+                />
+                <textarea
+                  className="w-full lg:w-8/12 bg-black border border-yellow-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
+                  name="text"
+                  value={editTodo.text!}
+                  onChange={(e) => setEditTodo({...editTodo, text: e.target.value})}
+                />
+              
+                <button className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold">
+                  Save
+                </button>
+              </form>
             </>
             ) : (
             /* add todo */
               <>
-                <input 
-                  className="w-full lg:w-8/12 bg-black border border-purple-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
-                  type="text"
-                  placeholder="Write here..."
-                  value={newTodoText}
-                  onChange={(e) => setNewTodoText(e.target.value)}
-                />
-                <button 
-                  onClick={addTodo} 
-                  className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold"
-                >
-                  Add Todo
-                </button>
+                <form onSubmit={handleSubmitAddTodo} style={{ width: "400px", display: "flex", flexDirection: "column" }}>
+                  <input 
+                    className="w-full lg:w-8/12 bg-black border border-purple-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
+                    type="text"
+                    name="title"
+                    placeholder="Write here your title..."
+                    value={title!}
+                    onChange={onTitleChanged}
+                  />
+                  
+                  <textarea
+                    className="w-full lg:w-8/12 bg-black border border-purple-400 py-4 text-xl rounded-lg text-purple-400 outline-none px-3"
+                    name="text"
+                    placeholder="Write here your text..."
+                    value={text!}
+                    onChange={onTextChanged}
+                  />
+                
+                  <button 
+                    className="bg-slate-800 px-6 py-2 rounded-lg my-7 text-green-400 text-lg uppercase font-semibold"
+                  >
+                    Add Todo
+                  </button>
+                </form>
+
               </>
             )
           }   
@@ -168,12 +211,20 @@ export default function Home() {
                       checked={todo.completed}
                       onChange={() => toggleTodo(todo._id, todo.completed)}
                     />
-                    <span 
-                      className={`${
-                        todo.completed ? "line-through" : "list-none"
-                      } px-4 w-full text-yellow-500`}>
-                      {todo.text}
-                    </span>
+                    <div style={{ width: "400px", display: "flex", flexDirection: "column" }}>
+                      <span 
+                        className={`${
+                          todo.completed ? "line-through" : "list-none"
+                        } px-4 w-full text-yellow-500`}>
+                        {todo.title}
+                      </span>
+                      <span 
+                        className={`${
+                          todo.completed ? "line-through" : "list-none"
+                        } px-4 w-full text-yellow-500`}>
+                        {todo.text}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="w-4/12 md:w-3/12">
