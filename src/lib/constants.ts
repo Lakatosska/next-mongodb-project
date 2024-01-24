@@ -1,1 +1,1 @@
-export const BASE_URL = "http://localhost:3000/api/todo"
+export const BASE_URL = "https://next-mongodb-project-six.vercel.app/api/todo"
